@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#161616">
+<title>露出計｜フィルム撮影用 単体HTML版</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23161616'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%23ffb000' stroke-width='5'/%3E%3Cpath d='M32 15 L39 32 L32 49 L25 32 Z' fill='%23e30613'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#161616; --panel:#22201d; --panel2:#2b2721; --ink:#f3ead3; --muted:#c9bda0;
+    --accent:#e30613; --amber:#ffb000; --cream:#f3ead3; --line:#4a4033; --good:#8bd450;
+    --lcd:#0d1f16; --lcd-ink:#b6ffcb; --shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; color:var(--ink); background:
+      radial-gradient(circle at 18% 8%, rgba(255,176,0,.13), transparent 28rem),
+      radial-gradient(circle at 88% 0%, rgba(227,6,19,.12), transparent 26rem),
+      repeating-linear-gradient(93deg, rgba(255,255,255,.018) 0 2px, transparent 2px 7px),
+      var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+    line-height:1.65;
+  }
+  a{color:var(--amber)}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .wrap{width:min(1160px,100%); margin:0 auto; padding:18px clamp(14px,3vw,34px) 34px}
+  header.hero{
+    position:relative; overflow:hidden; border:1px solid #594b36; border-radius:28px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.09), transparent 42%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 5px),
+      linear-gradient(145deg,#2b241b,#171512 58%,#241a13);
+    box-shadow:var(--shadow); padding:clamp(22px,4vw,42px); margin-bottom:18px;
+  }
+  header.hero::after{content:""; position:absolute; inset:auto -8% -62% 38%; height:210px; background:radial-gradient(ellipse, rgba(227,6,19,.24), transparent 66%); pointer-events:none}
+  .eyebrow{letter-spacing:.16em; text-transform:uppercase; color:var(--amber); font-weight:800; font-size:.78rem}
+  h1{font-size:clamp(2.2rem,6vw,4.8rem); line-height:1.02; margin:.18em 0 .22em; letter-spacing:.02em}
+  .lead{max-width:760px; color:var(--cream); font-size:clamp(1rem,2vw,1.16rem); margin:0}
+  .metalbar{height:12px; border-radius:99px; margin:22px 0 0; background:linear-gradient(180deg,#f8f3df,#8d8571 18%,#2e2b25 50%,#d9cfb4 82%,#655d4c); box-shadow:inset 0 1px 0 #fff8, 0 3px 10px #0009}
+  .layout{display:grid; grid-template-columns:minmax(0,1.45fr) minmax(310px,.85fr); gap:18px; align-items:start}
+  .card{
+    border:1px solid var(--line); border-radius:24px; background:linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.015)), var(--panel);
+    box-shadow:0 14px 34px rgba(0,0,0,.28); padding:clamp(16px,2.6vw,26px); margin-bottom:18px;
+  }
+  .card h2{font-size:1.28rem; margin:0 0 12px; display:flex; align-items:center; gap:.55rem}
+  .card h2::before{content:""; width:.72rem; height:.72rem; border-radius:50%; background:var(--accent); box-shadow:0 0 0 5px rgba(227,6,19,.16); flex:none}
+  .card h3{margin:1.15rem 0 .45rem; font-size:1.02rem; color:var(--amber)}
+  .sub{color:var(--muted); font-size:.92rem; margin-top:-6px}
+  .segmented{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 14px}
+  .segmented button,.chip,.scene-btn,.film-btn,.preset-btn{
+    border:1px solid #66563d; color:var(--ink); background:linear-gradient(180deg,#3a332a,#211d18); border-radius:999px; padding:.52rem .82rem; min-height:42px;
+  }
+  .segmented button[aria-pressed="true"],.chip[aria-pressed="true"],.scene-btn[aria-pressed="true"],.film-btn[aria-pressed="true"]{
+    background:linear-gradient(180deg,#ffcf4d,var(--amber)); color:#1b1300; border-color:#ffe08a; font-weight:900; box-shadow:0 0 0 3px rgba(255,176,0,.16)
+  }
+  .grid2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+  .grid3{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px}
+  label.lab{display:block; font-weight:800; color:var(--cream); margin-bottom:6px}
+  select,input[type="number"],input[type="text"]{
+    width:100%; border:1px solid #6b5a3e; border-radius:14px; background:#12100d; color:var(--ink); padding:.72rem .8rem; min-height:48px;
+  }
+  select:disabled{opacity:.62; color:var(--amber); border-color:var(--amber)}
+  input[type="range"]{width:100%; accent-color:var(--amber); height:34px}
+  .hint{font-size:.86rem; color:var(--muted)}
+  .readout{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:14px 0}
+  .stat{border:1px solid #574a35; background:#191613; border-radius:16px; padding:10px 12px; min-width:0}
+  .stat span{display:block; color:var(--muted); font-size:.78rem; letter-spacing:.08em}
+  .stat strong{display:block; font-size:clamp(1.08rem,2.4vw,1.55rem); line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .status{border-radius:18px; padding:13px 15px; font-weight:900; border:1px solid; margin:12px 0}
+  .status.good{background:rgba(88,160,54,.18); border-color:#79b84f; color:#d9ffb8}
+  .status.warn{background:rgba(255,176,0,.15); border-color:#a67c00; color:#ffe49a}
+  .status.bad{background:rgba(227,6,19,.16); border-color:#a31621; color:#ffc4c4}
+  .warnings{display:grid; gap:8px; margin:10px 0}
+  .warning{display:none; border-left:5px solid var(--amber); background:rgba(255,176,0,.12); padding:9px 12px; border-radius:10px}
+  .warning.show{display:block}
+  .warning.red{border-color:var(--accent); background:rgba(227,6,19,.13)}
+  .analog-zone{position:relative; padding:8px 0 2px}
+  .meter-shell{position:relative; max-width:560px; margin:0 auto; padding:16px 8px 4px}
+  .ring-badge{position:absolute; z-index:2; background:#111; border:1px solid #776747; color:var(--cream); border-radius:999px; padding:.22rem .6rem; font-size:.82rem; font-weight:900; box-shadow:0 4px 14px #0008; white-space:nowrap}
+  .ring-badge.top{top:0; left:50%; transform:translateX(-50%)}
+  .ring-badge.left{left:0; top:46%}
+  .ring-badge.right{right:0; top:46%}
+  .ring-badge.bottom{bottom:-4px; left:50%; transform:translateX(-50%)}
+  svg.meter{width:100%; height:auto; display:block; filter:drop-shadow(0 12px 18px rgba(0,0,0,.35))}
+  .lcd{
+    display:none; border:3px solid #3e4a3b; border-radius:18px; background:radial-gradient(circle at 50% 0%, rgba(182,255,203,.13), transparent 55%), var(--lcd); color:var(--lcd-ink);
+    padding:18px; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; box-shadow:inset 0 0 32px rgba(0,0,0,.62);
+  }
+  .lcd.show{display:block}
+  .analog-zone.hide{display:none}
+  .lcd-big{font-size:clamp(1.55rem,5vw,3.2rem); letter-spacing:.03em; line-height:1.15; text-shadow:0 0 9px rgba(182,255,203,.55)}
+  .lcd-row{display:flex; flex-wrap:wrap; gap:12px 22px; margin-top:8px; font-size:1rem}
+  .bar{position:relative; height:28px; border:1px solid rgba(182,255,203,.55); border-radius:8px; margin:20px 0 8px; background:linear-gradient(90deg, rgba(227,6,19,.35) 0 42%, rgba(139,212,80,.28) 42% 58%, rgba(255,176,0,.32) 58% 100%)}
+  .bar .zero{position:absolute; left:50%; top:-7px; bottom:-7px; width:2px; background:var(--lcd-ink)}
+  .bar .marker{position:absolute; top:-11px; width:4px; height:48px; background:#fff; border-radius:4px; box-shadow:0 0 12px #fff; transform:translateX(-50%)}
+  .bar-labels{display:flex; justify-content:space-between; font-size:.84rem}
+  .scene-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(142px,1fr)); gap:8px}
+  .scene-btn{text-align:left; border-radius:16px; min-height:70px}
+  .scene-btn b{display:block; color:var(--amber); font-size:.86rem}
+  .scene-btn[aria-pressed="true"] b{color:#2f1d00}
+  .film-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px}
+  .film-btn{text-align:left; border-radius:16px; min-height:66px}
+  .film-btn small{display:block; color:var(--muted)}
+  .film-btn[aria-pressed="true"] small{color:#443000}
+  .actions{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px}
+  .primary{border:0; border-radius:999px; background:linear-gradient(180deg,#ff2a35,var(--accent)); color:white; font-weight:950; padding:.78rem 1.15rem; min-height:48px; box-shadow:0 10px 22px rgba(227,6,19,.25)}
+  .secondary{border:1px solid #776747; border-radius:999px; background:#171410; color:var(--ink); padding:.72rem 1rem; min-height:46px; font-weight:800}
+  .danger{border-color:#8d2b32; color:#ffb9b9}
+  .list{display:grid; gap:10px; margin-top:12px}
+  .eq-item,.record-item,.custom-item{border:1px solid #514631; background:#191611; border-radius:16px; padding:12px 14px}
+  .eq-item.current{border-color:var(--amber); background:rgba(255,176,0,.1)}
+  .eq-item strong{font-size:1.05rem}
+  .record-item,.custom-item{display:flex; justify-content:space-between; gap:12px; align-items:flex-start}
+  .record-item p,.custom-item p{margin:.2rem 0 0; color:var(--muted)}
+  .delete-btn{flex:none; border:1px solid #7c3a3e; background:#241113; color:#ffc4c4; border-radius:999px; padding:.38rem .72rem}
+  .empty{border:1px dashed #66563d; border-radius:16px; padding:14px; color:var(--muted); background:rgba(255,255,255,.025)}
+  video{width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:18px; border:1px solid #66563d; background:#050505; display:none}
+  video.show{display:block}
+  .camera-readings{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px}
+  .notice{border:1px solid rgba(255,176,0,.55); background:rgba(255,176,0,.1); border-radius:16px; padding:12px 14px}
+  .error{display:none; border:1px solid rgba(227,6,19,.65); background:rgba(227,6,19,.13); color:#ffd7d7; border-radius:16px; padding:12px 14px; margin-top:12px}
+  .error.show{display:block}
+  details.guide{border:1px solid var(--line); border-radius:24px; background:#1d1a16; padding:0; overflow:hidden; margin-bottom:18px}
+  details.guide summary{cursor:pointer; padding:18px 22px; font-weight:950; font-size:1.18rem; background:linear-gradient(180deg,#332b21,#211d18)}
+  .guide-body{padding:6px 22px 22px}
+  .guide-body li{margin:.28rem 0}
+  .kbd{display:inline-block; border:1px solid #776747; border-bottom-width:3px; border-radius:7px; padding:.02rem .42rem; background:#111; color:var(--cream); font-weight:800}
+  footer{border:1px solid var(--line); border-radius:22px; padding:18px 20px; background:#191611; color:var(--muted)}
+  footer strong{color:var(--cream)}
+  .muse-link{font-weight:950; color:var(--amber)}
+  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+  @media (max-width:880px){
+    .layout{grid-template-columns:1fr}
+    .readout{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .camera-readings,.grid3{grid-template-columns:1fr}
+  }
+  @media (max-width:560px){
+    .grid2{grid-template-columns:1fr}
+    .ring-badge.left{left:-2px}.ring-badge.right{right:-2px}
+    .record-item,.custom-item{display:block}
+    .delete-btn{margin-top:8px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Film Photography Exposure Meter</div>
+    <h1>露出計</h1>
+    <p class="lead">フィルムカメラのための、単独で開ける露出計です。シーンの明るさ・ISO・絞り・シャッター速度から適正露出の目安を計算し、等価露出や警告、簡易スポットチェックまで確認できます。</p>
+    <div class="metalbar" aria-hidden="true"></div>
+  </header>
+
+  <main class="layout">
+    <div>
+      <section class="card" aria-labelledby="meterTitle">
+        <h2 id="meterTitle">露出メーター</h2>
+        <p class="sub">初期値は ISO 400、アナログ表示、絞り優先、シーン EV13、f/5.6、1/1000 で「適正露出」になるよう合わせています。</p>
+
+        <h3>表示モード</h3>
+        <div class="segmented" role="group" aria-label="表示モード">
+          <button type="button" id="displayAnalogBtn" aria-pressed="true">アナログ表示</button>
+          <button type="button" id="displayDigitalBtn" aria-pressed="false">デジタル表示</button>
+        </div>
+
+        <h3>露出モード</h3>
+        <div class="segmented" role="group" aria-label="露出モード">
+          <button type="button" data-mode="aperture" aria-pressed="true">絞り優先</button>
+          <button type="button" data-mode="shutter" aria-pressed="false">シャッター優先</button>
+          <button type="button" data-mode="manual" aria-pressed="false">マニュアル</button>
+        </div>
+
+        <div class="analog-zone" id="analogZone">
+          <div class="meter-shell" aria-label="アナログメーター">
+            <div class="ring-badge top" id="ringIso">ISO 400</div>
+            <div class="ring-badge left" id="ringAperture">f/5.6</div>
+            <div class="ring-badge right" id="ringShutter">1/1000</div>
+            <div class="ring-badge bottom" id="ringScene">EV 13</div>
+            <svg class="meter" viewBox="0 0 320 218" role="img" aria-labelledby="meterSvgTitle meterSvgDesc">
+              <title id="meterSvgTitle">針式露出メーター</title>
+              <desc id="meterSvgDesc">中央が適正露出、左がアンダー、右がオーバーです。</desc>
+              <defs>
+                <linearGradient id="dialFace" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#f7efcf"/><stop offset=".55" stop-color="#e7d9ad"/><stop offset="1" stop-color="#cdbb8a"/>
+                </linearGradient>
+                <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#6f6758"/><stop offset=".22" stop-color="#f3ead3"/><stop offset=".5" stop-color="#4a463f"/><stop offset=".78" stop-color="#d9cfb4"/><stop offset="1" stop-color="#5d574b"/>
+                </linearGradient>
+              </defs>
+              <rect x="12" y="10" width="296" height="196" rx="32" fill="#111" stroke="url(#metal)" stroke-width="5"/>
+              <path d="M 48 166 A 126 126 0 0 1 272 166 L 250 166 A 103 103 0 0 0 70 166 Z" fill="url(#dialFace)" opacity=".98"/>
+              <path d="M 70 166 A 103 103 0 0 1 137 72" fill="none" stroke="#e30613" stroke-width="10" opacity=".55"/>
+              <path d="M 183 72 A 103 103 0 0 1 250 166" fill="none" stroke="#ffb000" stroke-width="10" opacity=".55"/>
+              <g id="ticks" font-family="sans-serif" font-size="13" font-weight="800" fill="#201a10"></g>
+              <line id="needle" x1="160" y1="166" x2="160" y2="66" stroke="#e30613" stroke-width="5" stroke-linecap="round" transform="rotate(0 160 166)"/>
+              <circle cx="160" cy="166" r="15" fill="#1c1a17" stroke="url(#metal)" stroke-width="4"/>
+              <text x="160" y="196" text-anchor="middle" font-size="12" font-weight="900" fill="#332a18">− アンダー　0 適正　＋ オーバー</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="lcd" id="digitalZone" aria-label="デジタル表示">
+          <div class="lcd-big" id="lcdMain">f/5.6&nbsp;&nbsp;1/1000</div>
+          <div class="lcd-row"><span id="lcdIso">ISO 400</span><span id="lcdScene">SCENE EV 13</span><span id="lcdDiff">±0.0 EV</span></div>
+          <div class="bar" aria-hidden="true"><div class="zero"></div><div class="marker" id="lcdMarker" style="left:50%"></div></div>
+          <div class="bar-labels"><span>-3 UNDER</span><span>0</span><span>+3 OVER</span></div>
+        </div>
+
+        <div class="readout" aria-live="polite">
+          <div class="stat"><span>必要EV</span><strong id="requiredEvOut">15.00</strong></div>
+          <div class="stat"><span>設定EV</span><strong id="settingsEvOut">14.94</strong></div>
+          <div class="stat"><span>露出差</span><strong id="diffOut">+0.1</strong></div>
+          <div class="stat"><span>組み合わせ</span><strong id="pairOut">f/5.6 × 1/1000</strong></div>
+        </div>
+        <div class="status good" id="statusBox">適正露出です。この組み合わせで撮影できます。</div>
+        <div class="warnings">
+          <div class="warning red" id="reciprocityWarning">相反則不軌に注意：シャッターが1秒以上です。フィルムは長時間露光で実効感度が落ちるため、銘柄のデータシートを確認し、必要に応じて露出を足してください。</div>
+          <div class="warning" id="shakeWarning">手ブレ注意：シャッター速度が遅めです。肘を固定する、三脚を使う、壁にもたれるなど、カメラを安定させてください。</div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label class="lab" for="apertureSelect">絞り</label>
+            <select id="apertureSelect"></select>
+            <p class="hint" id="apertureHint">絞り優先では、シャッター速度を自動で選びます。</p>
+          </div>
+          <div>
+            <label class="lab" for="shutterSelect">シャッター速度</label>
+            <select id="shutterSelect"></select>
+            <p class="hint" id="shutterHint">シャッター優先では、絞りを自動で選びます。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="sceneTitle">
+        <h2 id="sceneTitle">シーンの明るさ</h2>
+        <p class="sub">撮る場所の明るさに近いものを選んでください。EVは ISO 100 基準の明るさです。ISOを変えると、必要な設定は自動で補正されます。</p>
+        <div class="scene-grid" id="sceneGrid"></div>
+      </section>
+
+      <section class="card" aria-labelledby="eqTitle">
+        <h2 id="eqTitle">等価露出リスト</h2>
+        <p class="sub">同じ明るさになる絞りとシャッター速度の組み合わせです。誤差 0.2EV 以内だけを表示します。絞りを変えると、ぼけ方とピントの合う範囲が変わります。</p>
+        <div class="list" id="equivalentList"></div>
+      </section>
+
+      <details class="guide" open>
+        <summary>使い方ガイド</summary>
+        <div class="guide-body">
+          <h3>基本の使い方</h3>
+          <ol>
+            <li>使うフィルムの ISO を合わせます。下の銘柄ボタン、または ISO スライダーで選べます。</li>
+            <li>撮影場所に近い「シーンの明るさ」を選びます。迷ったら、まず明るさを一つ暗め・明るめと比べてみてください。</li>
+            <li>絞りを自分で決めたいときは「絞り優先」、動きの止め方を決めたいときは「シャッター優先」、両方を自分で合わせたいときは「マニュアル」を選びます。</li>
+            <li>メーターが「適正露出」になったら、その絞りとシャッター速度をカメラに設定して撮影します。</li>
+          </ol>
+          <h3>EVとは</h3>
+          <p>EV（Exposure Value）は、明るさを表す段数です。1EV（1段）変わると、光の量は2倍または半分になります。絞りを1段開ける、シャッターを1段遅くする、ISOを2倍にする――このどれも、写真に入る光の量を約1段分増やします。</p>
+          <h3>Sunny 16 の目安</h3>
+          <p>快晴の日なたでは、ISO 100 のフィルムなら <span class="kbd">f/16</span> で <span class="kbd">1/100秒</span> 前後が基本です。ISO 400 ならシャッターは約 <span class="kbd">1/400秒</span> 前後。曇りでは f/8、日陰では f/5.6、夕方では f/4 のように、暗くなるほど絞りを開けるのが Sunny 16 の考え方です。このアプリのシーンEVも、同じ感覚で使えます。</p>
+          <h3>測光のコツ</h3>
+          <ul>
+            <li>人物の顔が主役なら、空の明るさではなく顔の明るさに寄せて考えます。逆光では1〜2段明るくすると顔が沈みにくくなります。</li>
+            <li>雪や白い壁が多い場面は、カメラや目安が暗く写そうとしがちです。少し明るめを意識すると白が白く残ります。</li>
+            <li>黒い被写体が多い場面は、逆に明るく写りやすいので、少し暗めが自然です。</li>
+            <li>大切なカットでは、適正の前後で1枚ずつ変える「段階露光」をすると安心です。フィルムは特に、少し明るめ側が失敗しにくい銘柄も多いです。</li>
+            <li>カメラスポットチェックは絶対EVの断定には使えません。スマホの自動露出や画面・レンズ条件で値が変わるため、シーン選びの補助として使ってください。</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <aside>
+      <section class="card" aria-labelledby="isoTitle">
+        <h2 id="isoTitle">ISOとフィルム</h2>
+        <label class="lab" for="isoRange">ISO感度：<span id="isoValue">400</span></label>
+        <input type="range" id="isoRange" min="6" max="6400" step="1" value="400">
+        <div class="grid2">
+          <div>
+            <label class="lab" for="isoNumber">数値で入力</label>
+            <input type="number" id="isoNumber" min="6" max="6400" step="1" value="400">
+          </div>
+          <div>
+            <label class="lab" for="selectedFilm">選択中</label>
+            <input type="text" id="selectedFilm" value="カスタム設定" readonly>
+          </div>
+        </div>
+        <h3>よく使うISO</h3>
+        <div class="segmented" id="isoPresets" role="group" aria-label="ISOプリセット"></div>
+        <h3>フィルム銘柄</h3>
+        <div class="film-grid" id="filmGrid"></div>
+      </section>
+
+      <section class="card" aria-labelledby="cameraTitle">
+        <h2 id="cameraTitle">カメラスポットチェック</h2>
+        <p class="sub">スマホ/PCのカメラ映像から、中央部分と画面全体の明るさの差を見ます。映像はこの端末の中だけで処理し、保存・送信はしません。</p>
+        <video id="cameraVideo" playsinline muted></video>
+        <canvas id="cameraCanvas" width="120" height="90" class="sr-only" aria-hidden="true"></canvas>
+        <div class="actions">
+          <button type="button" class="primary" id="cameraStartBtn">カメラを開始</button>
+          <button type="button" class="secondary" id="cameraStopBtn" disabled>停止</button>
+        </div>
+        <div class="camera-readings">
+          <div class="stat"><span>中央スポット目安</span><strong id="spotEvOut">--</strong></div>
+          <div class="stat"><span>全体平均目安</span><strong id="avgEvOut">--</strong></div>
+          <div class="stat"><span>中央−全体</span><strong id="spotDiffOut">--</strong></div>
+        </div>
+        <p class="hint" id="cameraDetail">まだ測定していません。明るさの数値は目安です。</p>
+        <h3>目安EVをシーンに反映</h3>
+        <div class="segmented" id="cameraEvButtons" role="group" aria-label="目安EVをシーンに反映">
+          <button type="button" data-camera-ev="15">EV15</button>
+          <button type="button" data-camera-ev="13">EV13</button>
+          <button type="button" data-camera-ev="11">EV11</button>
+          <button type="button" data-camera-ev="9">EV9</button>
+          <button type="button" data-camera-ev="7">EV7</button>
+        </div>
+        <div class="actions">
+          <button type="button" class="secondary" id="applySpotEvBtn" disabled>中央スポットの目安を反映</button>
+        </div>
+        <div class="error" id="cameraError" role="alert"></div>
+        <div class="notice" style="margin-top:12px">注意：このチェックは絶対EVの断定には使えません。端末の自動露出、レンズ、画面の明るさ補正で変わります。最終判断はシーン選択とメーター表示を合わせて行ってください。</div>
+      </section>
+
+      <section class="card" aria-labelledby="recordTitle">
+        <h2 id="recordTitle">露出記録</h2>
+        <p class="sub">気になった設定を残せます。記録はこの端末のブラウザ内にだけ保存されます。</p>
+        <label class="lab" for="memoInput">メモ（任意）</label>
+        <input type="text" id="memoInput" maxlength="120" placeholder="例：夕方の商店街、顔に光が残っていた">
+        <div class="actions">
+          <button type="button" class="primary" id="addRecordBtn">現在の設定を記録</button>
+        </div>
+        <div class="list" id="recordList"></div>
+      </section>
+
+      <section class="card" aria-labelledby="customFilmTitle">
+        <h2 id="customFilmTitle">カスタムフィルム</h2>
+        <p class="sub">よく使うフィルム名と現在ISOを保存できます。タップすると、そのISOを適用します。</p>
+        <label class="lab" for="customFilmName">フィルム名（60文字まで）</label>
+        <input type="text" id="customFilmName" maxlength="60" placeholder="例：期限切れ Gold 200（ISO 100で使用）">
+        <div class="actions">
+          <button type="button" class="primary" id="saveCustomFilmBtn">現在ISOで保存</button>
+        </div>
+        <p class="hint" id="customFilmMsg" aria-live="polite"></p>
+        <div class="list" id="customFilmList"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    <p><strong>このアプリは Muse と一緒に作ったアプリです。</strong> 自分でも何か作ってみたい方は、こちらから参加できます：<a class="muse-link" href="https://muse.ai/join" target="_blank" rel="noopener">Muse に参加する</a>（紹介コード：<strong>84A2JY</strong>）</p>
+    <p>この単体HTML版はサーバー不要で開けます。設定・露出記録・カスタムフィルムは、お使いのブラウザの localStorage に保存されます。</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const APERTURES = [
+    { label: 'f/1', value: 1 }, { label: 'f/1.4', value: 1.4 }, { label: 'f/2', value: 2 },
+    { label: 'f/2.8', value: 2.8 }, { label: 'f/4', value: 4 }, { label: 'f/5.6', value: 5.6 },
+    { label: 'f/8', value: 8 }, { label: 'f/11', value: 11 }, { label: 'f/16', value: 16 },
+    { label: 'f/22', value: 22 }
+  ];
+  const SHUTTERS = [
+    { label: '1"', sec: 1 }, { label: '1/2', sec: 1/2 }, { label: '1/4', sec: 1/4 },
+    { label: '1/8', sec: 1/8 }, { label: '1/15', sec: 1/15 }, { label: '1/30', sec: 1/30 },
+    { label: '1/60', sec: 1/60 }, { label: '1/125', sec: 1/125 }, { label: '1/250', sec: 1/250 },
+    { label: '1/500', sec: 1/500 }, { label: '1/1000', sec: 1/1000 }
+  ];
+  const ISO_PRESETS = [25, 50, 100, 200, 400, 800, 1600, 3200];
+  const SCENES = [
+    { ev: 3, label: '月明かり' },
+    { ev: 4, label: '夕景・薄暗い室内' },
+    { ev: 5, label: '暗めの室内' },
+    { ev: 6, label: '明るい室内・夜の街並み' },
+    { ev: 7, label: '曇った朝夕・濃い日陰' },
+    { ev: 8, label: 'どんよりした曇り' },
+    { ev: 9, label: '曇り' },
+    { ev: 10, label: '明るい曇り' },
+    { ev: 11, label: '薄日・霞んだ晴れ' },
+    { ev: 12, label: '晴れ間・柔らかい日差し' },
+    { ev: 13, label: '曇り・明るい日陰' },
+    { ev: 15, label: '晴れ・強い日差し' },
+    { ev: 16, label: '雪原・ビーチ' }
+  ];
+  const FILMS = [
+    { name: 'Kodak Ektar 100', iso: 100 },
+    { name: 'Fujifilm Velvia 50', iso: 50 },
+    { name: 'Kodak Portra 160', iso: 160 },
+    { name: 'Kodak Gold 200', iso: 200 },
+    { name: 'Fujifilm Superia Premium 400', iso: 400 },
+    { name: 'Kodak Portra 400', iso: 400 },
+    { name: 'Ilford HP5 Plus 400', iso: 400 },
+    { name: 'Kodak Tri-X 400', iso: 400 },
+    { name: 'Kodak Portra 800', iso: 800 },
+    { name: 'Ilford Delta 3200', iso: 3200 },
+    { name: 'CineStill 800T', iso: 800 }
+  ];
+  const STORAGE = {
+    settings: 'standaloneExposureMeter.v1.settings',
+    records: 'standaloneExposureMeter.v1.records',
+    customFilms: 'standaloneExposureMeter.v1.customFilms'
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    displayAnalogBtn: $('displayAnalogBtn'), displayDigitalBtn: $('displayDigitalBtn'),
+    analogZone: $('analogZone'), digitalZone: $('digitalZone'), needle: $('needle'), ticks: $('ticks'),
+    ringIso: $('ringIso'), ringAperture: $('ringAperture'), ringShutter: $('ringShutter'), ringScene: $('ringScene'),
+    lcdMain: $('lcdMain'), lcdIso: $('lcdIso'), lcdScene: $('lcdScene'), lcdDiff: $('lcdDiff'), lcdMarker: $('lcdMarker'),
+    requiredEvOut: $('requiredEvOut'), settingsEvOut: $('settingsEvOut'), diffOut: $('diffOut'), pairOut: $('pairOut'),
+    statusBox: $('statusBox'), reciprocityWarning: $('reciprocityWarning'), shakeWarning: $('shakeWarning'),
+    apertureSelect: $('apertureSelect'), shutterSelect: $('shutterSelect'), apertureHint: $('apertureHint'), shutterHint: $('shutterHint'),
+    sceneGrid: $('sceneGrid'), equivalentList: $('equivalentList'),
+    isoRange: $('isoRange'), isoNumber: $('isoNumber'), isoValue: $('isoValue'), selectedFilm: $('selectedFilm'),
+    isoPresets: $('isoPresets'), filmGrid: $('filmGrid'),
+    cameraVideo: $('cameraVideo'), cameraCanvas: $('cameraCanvas'), cameraStartBtn: $('cameraStartBtn'), cameraStopBtn: $('cameraStopBtn'),
+    spotEvOut: $('spotEvOut'), avgEvOut: $('avgEvOut'), spotDiffOut: $('spotDiffOut'), cameraDetail: $('cameraDetail'),
+    cameraError: $('cameraError'), applySpotEvBtn: $('applySpotEvBtn'),
+    memoInput: $('memoInput'), addRecordBtn: $('addRecordBtn'), recordList: $('recordList'),
+    customFilmName: $('customFilmName'), saveCustomFilmBtn: $('saveCustomFilmBtn'), customFilmMsg: $('customFilmMsg'), customFilmList: $('customFilmList')
+  };
+
+  function clamp(n, min, max) { return Math.min(max, Math.max(min, n)); }
+  function log2(n) { return Math.log(n) / Math.LN2; }
+  function evOfSettings(aIdx, sIdx) { return log2(Math.pow(APERTURES[aIdx].value, 2) / SHUTTERS[sIdx].sec); }
+  function requiredEv() { return state.sceneEv + log2(state.iso / 100); }
+  function fmtSigned(n, digits = 1) { return (n > 0 ? '+' : '') + n.toFixed(digits); }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function loadJson(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return parsed ?? fallback;
+    } catch (e) { return fallback; }
+  }
+  function saveJson(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage unavailable: app still works for this session */ }
+  }
+
+  const defaultState = {
+    iso: 400, display: 'analog', mode: 'aperture', sceneEv: 13,
+    apertureIdx: 5, shutterIdx: 10, filmName: 'カスタム設定'
+  };
+  let state = Object.assign({}, defaultState, loadJson(STORAGE.settings, {}));
+  state.iso = clamp(Math.round(Number(state.iso) || 400), 6, 6400);
+  if (!['analog', 'digital'].includes(state.display)) state.display = 'analog';
+  if (!['aperture', 'shutter', 'manual'].includes(state.mode)) state.mode = 'aperture';
+  if (!SCENES.some((s) => s.ev === Number(state.sceneEv))) state.sceneEv = 13;
+  state.apertureIdx = clamp(Number.isInteger(state.apertureIdx) ? state.apertureIdx : 5, 0, APERTURES.length - 1);
+  state.shutterIdx = clamp(Number.isInteger(state.shutterIdx) ? state.shutterIdx : 10, 0, SHUTTERS.length - 1);
+
+  let records = loadJson(STORAGE.records, []);
+  if (!Array.isArray(records)) records = [];
+  records = records.slice(0, 50);
+  let customFilms = loadJson(STORAGE.customFilms, []);
+  if (!Array.isArray(customFilms)) customFilms = [];
+
+  let cameraStream = null;
+  let cameraTimer = null;
+  let lastSpotBucket = null;
+
+  function persistSettings() { saveJson(STORAGE.settings, state); }
+  function persistRecords() { saveJson(STORAGE.records, records.slice(0, 50)); }
+  function persistCustomFilms() { saveJson(STORAGE.customFilms, customFilms); }
+
+  function buildTicks() {
+    const NS = 'http://www.w3.org/2000/svg';
+    const cx = 160, cy = 166;
+    for (let stop = -3; stop <= 3; stop++) {
+      const angle = stop * 19;
+      const rad = angle * Math.PI / 180;
+      const outer = 104, inner = stop === 0 ? 82 : 90;
+      const x1 = cx + outer * Math.sin(rad), y1 = cy - outer * Math.cos(rad);
+      const x2 = cx + inner * Math.sin(rad), y2 = cy - inner * Math.cos(rad);
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', x1.toFixed(1)); line.setAttribute('y1', y1.toFixed(1));
+      line.setAttribute('x2', x2.toFixed(1)); line.setAttribute('y2', y2.toFixed(1));
+      line.setAttribute('stroke', stop === 0 ? '#e30613' : '#201a10'); line.setAttribute('stroke-width', stop === 0 ? '4' : '3'); line.setAttribute('stroke-linecap', 'round');
+      els.ticks.appendChild(line);
+      const tx = cx + 122 * Math.sin(rad), ty = cy - 122 * Math.cos(rad) + 5;
+      const text = document.createElementNS(NS, 'text');
+      text.setAttribute('x', tx.toFixed(1)); text.setAttribute('y', ty.toFixed(1)); text.setAttribute('text-anchor', 'middle');
+      text.textContent = stop > 0 ? '+' + stop : String(stop);
+      els.ticks.appendChild(text);
+    }
+  }
+
+  function buildControls() {
+    APERTURES.forEach((a, i) => {
+      const opt = document.createElement('option'); opt.value = String(i); opt.textContent = a.label; els.apertureSelect.appendChild(opt);
+    });
+    SHUTTERS.forEach((s, i) => {
+      const opt = document.createElement('option'); opt.value = String(i); opt.textContent = s.label; els.shutterSelect.appendChild(opt);
+    });
+    ISO_PRESETS.forEach((iso) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = 'ISO ' + iso;
+      b.dataset.iso = String(iso); b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => { setIso(iso); state.filmName = 'カスタム設定'; syncAndRender(); });
+      els.isoPresets.appendChild(b);
+    });
+    SCENES.forEach((scene) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'scene-btn'; b.dataset.ev = String(scene.ev);
+      b.innerHTML = '<b>EV ' + scene.ev + '</b>' + escapeHtml(scene.label);
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => { state.sceneEv = scene.ev; syncAndRender(); });
+      els.sceneGrid.appendChild(b);
+    });
+    FILMS.forEach((film) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'film-btn';
+      b.innerHTML = escapeHtml(film.name) + '<small>ISO ' + film.iso + '</small>';
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => { setIso(film.iso); state.filmName = film.name; syncAndRender(); });
+      els.filmGrid.appendChild(b);
+    });
+    document.querySelectorAll('[data-camera-ev]').forEach((b) => {
+      b.addEventListener('click', () => { setSceneEv(Number(b.dataset.cameraEv)); });
+    });
+  }
+
+  function setIso(iso) {
+    state.iso = clamp(Math.round(Number(iso) || 100), 6, 6400);
+  }
+  function setSceneEv(ev) {
+    if (SCENES.some((s) => s.ev === ev)) { state.sceneEv = ev; syncAndRender(); }
+  }
+
+  function bestShutterIndex(aIdx) {
+    const req = requiredEv(); let best = 0; let bestAbs = Infinity;
+    SHUTTERS.forEach((_, sIdx) => {
+      const d = Math.abs(req - evOfSettings(aIdx, sIdx));
+      if (d < bestAbs) { bestAbs = d; best = sIdx; }
+    });
+    return best;
+  }
+  function bestApertureIndex(sIdx) {
+    const req = requiredEv(); let best = 0; let bestAbs = Infinity;
+    APERTURES.forEach((_, aIdx) => {
+      const d = Math.abs(req - evOfSettings(aIdx, sIdx));
+      if (d < bestAbs) { bestAbs = d; best = aIdx; }
+    });
+    return best;
+  }
+  function applyAuto() {
+    if (state.mode === 'aperture') state.shutterIdx = bestShutterIndex(state.apertureIdx);
+    if (state.mode === 'shutter') state.apertureIdx = bestApertureIndex(state.shutterIdx);
+  }
+
+  function dofText(aValue) {
+    if (aValue <= 1.4) return '背景はとても大きくぼけます。ピントはごく浅いので、目や主役の一点に慎重に合わせます。';
+    if (aValue <= 2.8) return '背景は大きくぼけます。被写界深度は浅めで、人物の背景整理に向きます。';
+    if (aValue <= 5.6) return 'ほどよくぼけ、主役と背景のバランスが取りやすい範囲です。ピントの余裕も少しあります。';
+    if (aValue <= 11) return 'ピントの合う範囲が広がります。風景、街並み、集合写真に向きます。';
+    return '画面全体にピントが合いやすく、ぼけは小さくなります。シャッター速度との兼ね合いに注意します。';
+  }
+
+  function currentMetrics() {
+    applyAuto();
+    const settingsEv = evOfSettings(state.apertureIdx, state.shutterIdx);
+    const req = requiredEv();
+    const overStops = req - settingsEv;
+    return { settingsEv, req, overStops };
+  }
+
+  function renderEquivalents(req) {
+    const pairs = [];
+    APERTURES.forEach((a, aIdx) => {
+      SHUTTERS.forEach((s, sIdx) => {
+        const ev = evOfSettings(aIdx, sIdx);
+        const diff = req - ev;
+        if (Math.abs(diff) <= 0.2) pairs.push({ aIdx, sIdx, ev, diff });
+      });
+    });
+    pairs.sort((x, y) => Math.abs(x.diff) - Math.abs(y.diff) || x.aIdx - y.aIdx || x.sIdx - y.sIdx);
+    if (!pairs.length) {
+      els.equivalentList.innerHTML = '<div class="empty">誤差0.2EV以内の組み合わせがありません。ISOまたはシーンを少し変えてください。</div>';
+      return;
+    }
+    els.equivalentList.innerHTML = pairs.map((p) => {
+      const current = p.aIdx === state.apertureIdx && p.sIdx === state.shutterIdx;
+      return '<article class="eq-item' + (current ? ' current' : '') + '">' +
+        '<strong>' + APERTURES[p.aIdx].label + ' × ' + SHUTTERS[p.sIdx].label + '</strong>' +
+        '<span class="hint">（誤差 ' + fmtSigned(p.diff, 2) + ' EV' + (current ? '・選択中' : '') + '）</span>' +
+        '<p>' + dofText(APERTURES[p.aIdx].value) + '</p></article>';
+    }).join('');
+  }
+
+  function renderRecords() {
+    if (!records.length) {
+      els.recordList.innerHTML = '<div class="empty">まだ記録はありません。「現在の設定を記録」から追加できます。</div>';
+      return;
+    }
+    els.recordList.innerHTML = records.slice(0, 50).map((r) => {
+      const when = r.createdAt ? new Date(r.createdAt).toLocaleString('ja-JP') : '';
+      return '<article class="record-item"><div><strong>' + escapeHtml(r.pair || '') + '</strong>' +
+        '<p>' + escapeHtml(when) + '／' + escapeHtml(r.sceneText || '') + '／ISO ' + escapeHtml(r.iso) + '／' + escapeHtml(r.status || '') + '</p>' +
+        (r.memo ? '<p>メモ：' + escapeHtml(r.memo) + '</p>' : '') + '</div>' +
+        '<button type="button" class="delete-btn" data-delete-record="' + escapeHtml(r.id) + '">削除</button></article>';
+    }).join('');
+    els.recordList.querySelectorAll('[data-delete-record]').forEach((b) => {
+      b.addEventListener('click', () => {
+        records = records.filter((r) => String(r.id) !== b.dataset.deleteRecord);
+        persistRecords(); renderRecords();
+      });
+    });
+  }
+
+  function renderCustomFilms() {
+    if (!customFilms.length) {
+      els.customFilmList.innerHTML = '<div class="empty">まだカスタムフィルムはありません。名前と現在ISOで保存できます。</div>';
+      return;
+    }
+    els.customFilmList.innerHTML = customFilms.map((f) => {
+      return '<article class="custom-item"><div><strong>' + escapeHtml(f.name) + '</strong><p>ISO ' + escapeHtml(f.iso) + '（タップで適用）</p></div>' +
+        '<span><button type="button" class="secondary" data-apply-film="' + escapeHtml(f.id) + '">適用</button> ' +
+        '<button type="button" class="delete-btn" data-delete-film="' + escapeHtml(f.id) + '">削除</button></span></article>';
+    }).join('');
+    els.customFilmList.querySelectorAll('[data-apply-film]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const f = customFilms.find((x) => String(x.id) === b.dataset.applyFilm);
+        if (f) { setIso(f.iso); state.filmName = f.name; syncAndRender(); }
+      });
+    });
+    els.customFilmList.querySelectorAll('[data-delete-film]').forEach((b) => {
+      b.addEventListener('click', () => {
+        customFilms = customFilms.filter((x) => String(x.id) !== b.dataset.deleteFilm);
+        persistCustomFilms(); renderCustomFilms();
+      });
+    });
+  }
+
+  function render() {
+    const { settingsEv, req, overStops } = currentMetrics();
+    const a = APERTURES[state.apertureIdx];
+    const s = SHUTTERS[state.shutterIdx];
+    const clamped = clamp(overStops, -3, 3);
+    const angle = clamp(clamped * 19, -58, 58);
+
+    // Display mode
+    const analog = state.display === 'analog';
+    els.displayAnalogBtn.setAttribute('aria-pressed', String(analog));
+    els.displayDigitalBtn.setAttribute('aria-pressed', String(!analog));
+    els.analogZone.classList.toggle('hide', !analog);
+    els.digitalZone.classList.toggle('show', !analog);
+
+    // Mode buttons and control availability
+    document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
+    els.apertureSelect.disabled = state.mode === 'shutter';
+    els.shutterSelect.disabled = state.mode === 'aperture';
+    els.apertureHint.textContent = state.mode === 'aperture' ? '絞り優先：シャッター速度は自動で選ばれます。' : (state.mode === 'shutter' ? 'シャッター優先：絞りは自動で選ばれます。' : 'マニュアル：絞りを自分で選びます。');
+    els.shutterHint.textContent = state.mode === 'shutter' ? 'シャッター優先：絞りは自動で選ばれます。' : (state.mode === 'aperture' ? '絞り優先：シャッター速度は自動で選ばれます。' : 'マニュアル：シャッター速度を自分で選びます。');
+
+    // Controls
+    els.apertureSelect.value = String(state.apertureIdx);
+    els.shutterSelect.value = String(state.shutterIdx);
+    els.isoRange.value = String(state.iso);
+    els.isoNumber.value = String(state.iso);
+    els.isoValue.textContent = String(state.iso);
+    els.selectedFilm.value = state.filmName || 'カスタム設定';
+
+    // Scene / ISO / film pressed states
+    els.sceneGrid.querySelectorAll('.scene-btn').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.ev) === state.sceneEv)));
+    els.isoPresets.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.iso) === state.iso)));
+    els.filmGrid.querySelectorAll('.film-btn').forEach((b, i) => b.setAttribute('aria-pressed', String(FILMS[i].name === state.filmName && FILMS[i].iso === state.iso)));
+
+    // Meter and readouts
+    els.needle.setAttribute('transform', 'rotate(' + angle.toFixed(1) + ' 160 166)');
+    els.ringIso.textContent = 'ISO ' + state.iso;
+    els.ringAperture.textContent = a.label;
+    els.ringShutter.textContent = s.label;
+    const scene = SCENES.find((x) => x.ev === state.sceneEv);
+    els.ringScene.textContent = 'EV ' + state.sceneEv + (scene ? ' ' + scene.label : '');
+    els.lcdMain.textContent = a.label + '  ' + s.label;
+    els.lcdIso.textContent = 'ISO ' + state.iso;
+    els.lcdScene.textContent = 'SCENE EV ' + state.sceneEv;
+    els.lcdDiff.textContent = fmtSigned(overStops, 1) + ' EV';
+    els.lcdMarker.style.left = (((clamped + 3) / 6) * 100).toFixed(2) + '%';
+    els.requiredEvOut.textContent = req.toFixed(2);
+    els.settingsEvOut.textContent = settingsEv.toFixed(2);
+    els.diffOut.textContent = fmtSigned(overStops, 1);
+    els.pairOut.textContent = a.label + ' × ' + s.label;
+
+    let statusClass = 'good';
+    let statusText = '適正露出です。この組み合わせで撮影できます。';
+    if (Math.abs(overStops) > 0.25 && Math.abs(overStops) <= 0.75) {
+      statusClass = 'warn';
+      statusText = overStops > 0 ? '少しオーバー（明るめ）です。フィルムなら許容範囲のこともあります。' : '少しアンダー（暗め）です。顔や主役が沈まないか確認してください。';
+    } else if (Math.abs(overStops) > 0.75) {
+      statusClass = 'bad';
+      statusText = overStops > 0 ? fmtSigned(overStops, 1) + '段オーバーです。絞るか、シャッターを速くしてください。' : fmtSigned(overStops, 1) + '段アンダーです。絞りを開けるか、シャッターを遅くしてください。';
+    }
+    els.statusBox.className = 'status ' + statusClass;
+    els.statusBox.textContent = statusText;
+
+    els.reciprocityWarning.classList.toggle('show', s.sec >= 1);
+    els.shakeWarning.classList.toggle('show', s.sec >= 1/30);
+
+    renderEquivalents(req);
+    persistSettings();
+  }
+
+  function syncAndRender() { render(); }
+
+  // Events
+  els.displayAnalogBtn.addEventListener('click', () => { state.display = 'analog'; render(); });
+  els.displayDigitalBtn.addEventListener('click', () => { state.display = 'digital'; render(); });
+  document.querySelectorAll('[data-mode]').forEach((b) => {
+    b.addEventListener('click', () => { state.mode = b.dataset.mode; render(); });
+  });
+  els.apertureSelect.addEventListener('change', () => { state.apertureIdx = Number(els.apertureSelect.value); render(); });
+  els.shutterSelect.addEventListener('change', () => { state.shutterIdx = Number(els.shutterSelect.value); render(); });
+  els.isoRange.addEventListener('input', () => { setIso(els.isoRange.value); state.filmName = 'カスタム設定'; render(); });
+  els.isoNumber.addEventListener('change', () => { setIso(els.isoNumber.value); state.filmName = 'カスタム設定'; render(); });
+  els.isoNumber.addEventListener('input', () => {
+    const v = Number(els.isoNumber.value);
+    if (Number.isFinite(v) && v >= 6 && v <= 6400) { setIso(v); state.filmName = 'カスタム設定'; render(); }
+  });
+
+  els.addRecordBtn.addEventListener('click', () => {
+    const { req, settingsEv, overStops } = currentMetrics();
+    const scene = SCENES.find((x) => x.ev === state.sceneEv);
+    const status = Math.abs(overStops) <= 0.25 ? '適正露出' : (overStops > 0 ? fmtSigned(overStops, 1) + '段オーバー' : fmtSigned(overStops, 1) + '段アンダー');
+    records.unshift({
+      id: String(Date.now()) + '-' + Math.random().toString(36).slice(2, 7),
+      createdAt: new Date().toISOString(),
+      pair: APERTURES[state.apertureIdx].label + ' × ' + SHUTTERS[state.shutterIdx].label,
+      sceneText: 'EV' + state.sceneEv + (scene ? ' ' + scene.label : ''),
+      iso: state.iso,
+      filmName: state.filmName || '',
+      mode: state.mode,
+      requiredEv: Number(req.toFixed(2)), settingsEv: Number(settingsEv.toFixed(2)), overStops: Number(overStops.toFixed(2)),
+      status, memo: els.memoInput.value.trim()
+    });
+    records = records.slice(0, 50);
+    els.memoInput.value = '';
+    persistRecords(); renderRecords();
+  });
+
+  els.saveCustomFilmBtn.addEventListener('click', () => {
+    const name = els.customFilmName.value.trim();
+    if (!name) { els.customFilmMsg.textContent = 'フィルム名を入力してください。'; return; }
+    if (name.length > 60) { els.customFilmMsg.textContent = 'フィルム名は60文字までです。'; return; }
+    const iso = clamp(Math.round(Number(state.iso) || 0), 6, 6400);
+    if (!Number.isFinite(iso) || iso < 6 || iso > 6400) { els.customFilmMsg.textContent = 'ISOは6〜6400で保存してください。'; return; }
+    customFilms.unshift({ id: String(Date.now()) + '-' + Math.random().toString(36).slice(2, 7), name, iso });
+    els.customFilmName.value = '';
+    els.customFilmMsg.textContent = '保存しました：' + name + '（ISO ' + iso + '）';
+    persistCustomFilms(); renderCustomFilms();
+  });
+
+  function showCameraError(message) {
+    els.cameraError.textContent = message;
+    els.cameraError.classList.add('show');
+  }
+  function clearCameraError() {
+    els.cameraError.textContent = '';
+    els.cameraError.classList.remove('show');
+  }
+  function evFromLuminance(norm) {
+    const safe = clamp(norm, 0.002, 1);
+    return 15 + log2(safe / 0.5);
+  }
+  function bucketEv(ev) {
+    const buckets = [15, 13, 11, 9, 7];
+    let best = buckets[0]; let bestAbs = Infinity;
+    buckets.forEach((b) => { const d = Math.abs(ev - b); if (d < bestAbs) { bestAbs = d; best = b; } });
+    return best;
+  }
+  function sampleCamera() {
+    if (!cameraStream || els.cameraVideo.readyState < 2) return;
+    const ctx = els.cameraCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+    ctx.drawImage(els.cameraVideo, 0, 0, els.cameraCanvas.width, els.cameraCanvas.height);
+    let img;
+    try { img = ctx.getImageData(0, 0, els.cameraCanvas.width, els.cameraCanvas.height); }
+    catch (e) { showCameraError('カメラ映像の明るさを読み取れませんでした。シーン選択でそのまま使えます。'); return; }
+    const data = img.data; const w = els.cameraCanvas.width; const h = els.cameraCanvas.height;
+    const cx0 = Math.floor(w * 0.375), cx1 = Math.ceil(w * 0.625), cy0 = Math.floor(h * 0.375), cy1 = Math.ceil(h * 0.625);
+    let allSum = 0, allCount = 0, spotSum = 0, spotCount = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        const lum = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+        allSum += lum; allCount++;
+        if (x >= cx0 && x < cx1 && y >= cy0 && y < cy1) { spotSum += lum; spotCount++; }
+      }
+    }
+    const avg = allSum / Math.max(1, allCount);
+    const spot = spotSum / Math.max(1, spotCount);
+    const avgNorm = avg / 255; const spotNorm = spot / 255;
+    const avgEv = evFromLuminance(avgNorm); const spotEv = evFromLuminance(spotNorm);
+    const diff = spotEv - avgEv;
+    lastSpotBucket = bucketEv(spotEv);
+    els.spotEvOut.textContent = 'EV ' + lastSpotBucket;
+    els.avgEvOut.textContent = 'EV ' + bucketEv(avgEv);
+    els.spotDiffOut.textContent = fmtSigned(diff, 1) + ' EV';
+    els.cameraDetail.textContent = '中央の輝度 ' + spot.toFixed(0) + '／全体の輝度 ' + avg.toFixed(0) + '（0〜255）。中央スポットの連続目安は EV ' + spotEv.toFixed(1) + '、全体は EV ' + avgEv.toFixed(1) + ' です。自動露出の影響を受けるため目安として使ってください。';
+    els.applySpotEvBtn.disabled = false;
+  }
+  async function startCamera() {
+    clearCameraError();
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+      showCameraError('この環境ではカメラを利用できません。シーン選択だけでも、露出計算・等価露出・記録などの全機能が使えます。');
+      return;
+    }
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      els.cameraVideo.srcObject = cameraStream;
+      els.cameraVideo.classList.add('show');
+      await els.cameraVideo.play();
+      els.cameraStartBtn.disabled = true; els.cameraStopBtn.disabled = false;
+      sampleCamera();
+      cameraTimer = window.setInterval(sampleCamera, 350);
+    } catch (e) {
+      cameraStream = null;
+      showCameraError('カメラを開始できませんでした（許可がない、または使用中の可能性があります）。シーン選択だけでも、露出計算・等価露出・記録などの全機能が使えます。');
+    }
+  }
+  function stopCamera() {
+    if (cameraTimer) { window.clearInterval(cameraTimer); cameraTimer = null; }
+    if (cameraStream) { cameraStream.getTracks().forEach((t) => t.stop()); cameraStream = null; }
+    els.cameraVideo.srcObject = null; els.cameraVideo.classList.remove('show');
+    els.cameraStartBtn.disabled = false; els.cameraStopBtn.disabled = true;
+  }
+  els.cameraStartBtn.addEventListener('click', startCamera);
+  els.cameraStopBtn.addEventListener('click', stopCamera);
+  els.applySpotEvBtn.addEventListener('click', () => { if (lastSpotBucket) setSceneEv(lastSpotBucket); });
+  window.addEventListener('beforeunload', stopCamera);
+
+  buildTicks();
+  buildControls();
+  render();
+  renderRecords();
+  renderCustomFilms();
+})();
+</script>
+</body>
+</html>
